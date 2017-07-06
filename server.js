@@ -5,6 +5,8 @@ const bodyParser = require('body-parser')
 const pug = require('pug')
 const expressWs = require('express-ws')
 
+const port = process.env.PORT
+
 const renderChatUi = pug.compileFile('templates/chatui.pug')
 const baseHtml = fs.readFileSync(__dirname + '/static/base.html', 'utf8', (err, html) => {
   if (err) {
@@ -143,8 +145,8 @@ function init() {
     delete currentUsers[req.params.id]
   })
 
-  let server = app.listen(8080, () => {
-    console.log('Running on port 8080!')
+  let server = app.listen(port, () => {
+    console.log(`Running on port ${port}!`)
   })
 
   process.on('SIGTERM', shutdown.bind(null, server, appData));
