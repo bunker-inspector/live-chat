@@ -143,7 +143,7 @@ function init() {
     delete currentUsers[req.params.id]
   })
 
-  let server = app.listen(5000, () => {
+  let server = app.listen(8080, () => {
     console.log('Running on port 8080!')
   })
 
