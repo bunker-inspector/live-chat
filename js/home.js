@@ -59,10 +59,12 @@ function onSignIn(googleUser) {
     .done((data) => {
         $('#content').html(data)
 
+        let container = $('#container')
+        container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
+
         $('#message-send').click(sendMessage)
         $('#message-input').on('keydown', (e) => {
           // send on enter key
-          console.log("HERE!!" + e.code)
           if (e.keyCode === 13) {
             sendMessage(e)
           }
@@ -70,7 +72,9 @@ function onSignIn(googleUser) {
 
         const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
         updateSocket.onmessage = (event) => {
-            $('#container').html(event.data)
+
+          container.html(event.data)
+          container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
         }
 
         sessionStorage.setItem(SOCKET, updateSocket)
