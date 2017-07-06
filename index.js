@@ -5,6 +5,12 @@ const bodyParser = require('body-parser')
 const pug = require('pug')
 
 const renderChatUi = pug.compileFile('templates/chatui.pug')
+const baseHtml = fs.readFileSync(__dirname + '/static/base.html', 'utf8', (err, html) => {
+  if (err) {
+    console.log('An internal error occurred that prevented the service from starting. Exiting...')
+    process.exit()
+  }
+})
 
 function sendFile(req, res) {
   res.sendFile(`${__dirname}/${req.path}`)
@@ -78,7 +84,7 @@ function init() {
 
   app.get('/posts/:user', (req, res) => {
     res.send(_.filter(chatLog, (message) => {
-      return message.user === req.params.user
+      return message.uid === req.params.user
     }))
   })
 
@@ -101,8 +107,7 @@ function init() {
       users: currentUsers,
       messages: chatLog
     })
-    console.log(rendered)
-    res.send(rendered)
+    res.send(`${rendered}${baseHtml}`)
   })
 
   app.delete('/clear', (req, res) => {
