@@ -79,8 +79,8 @@ function init() {
 
   app.delete('/clear', (req, res) => {
     //dun dun dunnnn
-    chatLog = []
-    res.send('OK')
+    chatLog.length = 0
+    res.send(chatLog)
   })
 
   app.get('/', (req, res) => {
