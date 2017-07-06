@@ -1,0 +1,28 @@
+.container.my-scrollable
+  each message in messages
+    .media
+      - var myMessage = message.uid === me.id
+      a(
+        class=myMessage ? 'pull-right' : 'pull-left'
+        href='#'
+      )
+        -var user = users[message.uid] || {image: 'https://www.askideas.com/media/16/Cute-Pug-Puppy-Picture.jpg'}
+        img(
+          class='media-object'
+          src=user.image
+          width=64
+          hight=64
+        )
+      .media-body
+        h4.media-heading= message.user
+        p= message.text
+      hr
+
+.input-group
+  input(
+    type='text'
+    class='form-control'
+    placeholder='Enter message...'
+  )
+  span.input-group-btn
+    button(class='btn btn-default' type='button') Send
