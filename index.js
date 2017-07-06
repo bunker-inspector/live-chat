@@ -87,7 +87,7 @@ function init() {
   })
 
   app.post('/new-message', (req, res) => {
-    chatLog[chatLog.length] = req.body.message
+    chatLog[chatLog.length] = req.body
     res.send(chatLog)
   })
 
@@ -96,10 +96,13 @@ function init() {
       name: req.body.name,
       image: req.body.image
     }
-    res.send(renderChatUi({
+    var rendered = renderChatUi({
       me: req.body,
+      users: currentUsers,
       messages: chatLog
-    }))
+    })
+    console.log(rendered)
+    res.send(rendered)
   })
 
   app.delete('/clear', (req, res) => {

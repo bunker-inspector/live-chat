@@ -2,6 +2,10 @@ html {
     margin-left: 4px;
 }
 
+.container {
+    margin: 25px;
+}
+
 .btn-primary {
     margin-bottom: 8px;
 }
