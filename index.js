@@ -92,7 +92,7 @@ function init() {
   })
 
   app.get('/current-users', (req, res) => {
-    res.send(currentUsers)
+    res.send(_.map(currentUsers, (user) => user.name))
   })
 
   app.post('/new-message', (req, res) => {
@@ -140,10 +140,6 @@ function init() {
   })
 
   app.delete('/leave/:id', (req, res) => {
-    let leavingSocket = currentUsers[req.params.id].socket
-    if (leavingSocket) {
-        leavingSocket.close()
-    }
     delete currentUsers[req.params.id]
   })
 

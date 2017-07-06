@@ -31,13 +31,13 @@ function onSignIn(googleUser) {
     image: profile.getImageUrl()
   }
 
-  sessionStorage.setItem(USER, userData)
+  sessionStorage.setItem(USER, JSON.stringify(userData))
 
   $.post('/join', userData)
     .done((data) => {
         $('#content').html(data)
 
-        const updateSocket = new WebSocket('ws://localhost:8080/register/' + userData.id)
+        const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
         updateSocket.onmessage = (event) => {
             $('#container').html(event.data)
         }
@@ -49,15 +49,17 @@ function onSignIn(googleUser) {
 function signOut() {
 
 
-  var auth2 = gapi.auth2.getAuthInstance();
+  var auth2 = gapi.auth2.getAuthInstance()
   auth2.signOut().then(() => {
+    if (sessionStorage.getItem(USER))
+    {
+      $.ajax({
+        type: 'DELETE',
+        url: '/leave/' + JSON.parse(sessionStorage.getItem(USER)).id
+      })
+    }
 
-    let updateSocket = sessionStorage.getItem(SOCKET) || { close: () => {}}
-    updateSocket.close()
     sessionStorage.removeItem(SOCKET)
-
-    $.delete('/leave/' + sessionStorage.getItem(USER).id)
-
     sessionStorage.removeItem(USER)
     console.log('User signed out.')
   })
