@@ -1,0 +1,21 @@
+{
+  "name": "foodora",
+  "version": "0.0.1",
+  "description": "Foodora round 1 interview challenge",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --reporter spec"
+  },
+  "keywords": [],
+  "author": "Ted Kassen",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2",
+    "chai": "^4.0.2",
+    "chai-http": "^2.0.1"
+  }
+}
