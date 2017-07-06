@@ -1,4 +1,5 @@
-var USER = 'user'
+const USER = 'user'
+const SOCKET = 'socket'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
@@ -10,15 +11,16 @@ function onSignIn(googleUser) {
 
   let userData = {
     name: profile.getName(),
-    googleId: profile.getId()
+    id: profile.getId(),
+    image: profile.getImageUrl()
   }
 
   sessionStorage.setItem(USER, userData)
 
   $.post('http://localhost:8080/join', userData)
     .done((data) => {
-
-    })
+        $('#content').html(data)
+      })
 }
 
 function signOut() {

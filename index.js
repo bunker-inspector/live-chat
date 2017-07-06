@@ -2,6 +2,9 @@ const express = require('express')
 const fs = require('fs')
 const _ = require('lodash')
 const bodyParser = require('body-parser')
+const pug = require('pug')
+
+const renderChatUi = pug.compileFile('templates/chatui.pug')
 
 function sendFile(req, res) {
   res.sendFile(`${__dirname}/${req.path}`)
@@ -51,6 +54,7 @@ fs.readFile('chatLog.json', 'utf8', function (err, data) {
 
 function init() {
   const app = express()
+  var currentUsers = {}
   var appData = this.appData
   var chatLog = this.appData.chatLog || []
 
@@ -78,9 +82,24 @@ function init() {
     }))
   })
 
+  app.get('/current-users', (req, res) => {
+    res.send(currentUsers)
+  })
+
   app.post('/new-message', (req, res) => {
     chatLog[chatLog.length] = req.body.message
     res.send(chatLog)
+  })
+
+  app.post('/join', (req, res) => {
+    currentUsers[req.body.id] = {
+      name: req.body.name,
+      image: req.body.image
+    }
+    res.send(renderChatUi({
+      me: req.body,
+      messages: chatLog
+    }))
   })
 
   app.delete('/clear', (req, res) => {
