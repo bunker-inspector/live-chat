@@ -8,7 +8,7 @@ $(document).ready(function () {
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
 
-  $.get('http://localhost:8080/posts/' + id, (data) => {
+  $.get('/posts/' + id, (data) => {
     $('.modal-title').text(name + '\'s posts')
 
     $('.modal-body').html(data
@@ -33,7 +33,7 @@ function onSignIn(googleUser) {
 
   sessionStorage.setItem(USER, userData)
 
-  $.post('http://localhost:8080/join', userData)
+  $.post('/join', userData)
     .done((data) => {
         $('#content').html(data)
       })
