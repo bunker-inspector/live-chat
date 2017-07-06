@@ -1,66 +1,85 @@
 const express = require('express')
 const fs = require('fs')
 const _ = require('lodash')
+const bodyParser = require('body-parser')
 
 function sendFile(req, res) {
   res.sendFile(`${__dirname}/${req.path}`)
 }
 
 function shutdown(server) {
-  console.log("Received kill signal, shutting down...")
+  console.log('Received kill signal, shutting down...')
   server.close(() => {
-    console.log("Closed out remaining connections.")
+    console.log('Closed out remaining connections.')
     process.exit()
   })
 
   setTimeout(() => {
-    console.error("Could not close connections in time, forcefully shutting down")
+    console.error('Could not close connections in time, forcefully shutting down')
     process.exit()
   }, 10000)
 }
 
-fs.readFile(' chatLog.json', 'utf8', function (err, data) {
+fs.readFile('chatLog.json', 'utf8', function (err, data) {
   if (err) {
     console.log('Failed to initialize app. Shutting down...')
-    this.chatLog = {}
+    this.appData = { chatLog: [] }
   }
   else {
-    this.chatLog = JSON.parse(data)
+    this.appData = JSON.parse(data)
   }
   module.exports = init.call(this)
 })
 
-
-
 function init() {
   const app = express()
-  var chatLog = this.chatLog
+  var appData = this.appData
+  var chatLog = this.appData.chatLog || []
+
+  app.use(bodyParser.json())
+  app.use(bodyParser.urlencoded({ extended: true }))
+  app.use((req, res, next) => {
+    res.setHeader('Connection', 'close')
+    next()
+  })
 
   app.get('/js/:file', sendFile);
   app.get('/css/:file', sendFile);
 
-  app.get('/getLog', (req, res) => {
+  app.get('/chat-log', (req, res) => {
     res.send(chatLog)
   })
 
   app.post('/new-message', (req, res) => {
-
+    chatLog[chatLog.length] = req.body
+    res.send(chatLog)
   })
 
   app.delete('/clear', (req, res) => {
     //dun dun dunnnn
-    chatLog = {}
+    chatLog = []
+    res.send('OK')
   })
 
   app.get('/', (req, res) => {
     res.sendFile('index.html',
         { root: __dirname } );
-  });
+  })
 
-  let server = app.listen(8080)
+  let server = app.listen(8080, () => {
+    console.log('Running on port 8080!')
+  })
 
   process.on('SIGTERM', shutdown.bind(null, server));
   process.on('SIGINT', shutdown.bind(null, server));
+
+  _.forEach(app._router.stack, r => {
+    if (r.route && r.route.path){
+      for (var key in r.route.methods) {
+        if (r.route.methods[key]) console.log(`${key}\t${r.route.path}`)
+      }
+    }
+  })
 
   return app
 }

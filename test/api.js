@@ -7,11 +7,11 @@ chai.use(chaiHttp)
 
 const host = 'http://localhost:8080'
 
-describe('GET /data', () => {
-  it('can read file', (done) => {
+describe('GET /chat-log', () => {
+  it('Is valid endpoint', (done) => {
     chai
       .request(host)
-      .get('/data')
+      .get('/chat-log')
       .end((err, res) => {
           res.should.have.status(200)
         done()
@@ -20,10 +20,9 @@ describe('GET /data', () => {
   it('contents are correct', (done) => {
     chai
       .request(host)
-      .get('/data')
+      .get('/chat-log')
       .end((err, res) => {
-          res.body.should.be.a('object')
-          res.body.should.have.property('AW').eql('Aruba')
+          res.body.should.be.a('array')
         done()
       })
   })
