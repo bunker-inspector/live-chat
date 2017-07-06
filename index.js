@@ -72,8 +72,14 @@ function init() {
     res.send(chatLog)
   })
 
+  app.get('/posts/:user', (req, res) => {
+    res.send(_.filter(chatLog, (message) => {
+      return message.user === req.params.user
+    }))
+  })
+
   app.post('/new-message', (req, res) => {
-    chatLog[chatLog.length] = req.body
+    chatLog[chatLog.length] = req.body.message
     res.send(chatLog)
   })
 
