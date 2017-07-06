@@ -4,22 +4,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="description" content="">
-    <meta name="author" content="Ted Kassen"> 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/home.css" rel="stylesheet">
-    <title>Foodora Interview App</title>
-  </head>
-
-  <body>
-    <h1>Hello!</h1>
-
-    <a id="data-disp-btn" class="btn btn-primary" href="#" role="button">Show/Hide</a>
-    <a id="data-dnld-btn" class="btn btn-primary" href="#" role="button">Download</a>
-
-    <pre id="data-view"></pre>
-
+    <meta name="author" content="Ted Kassen">
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="276948334679-73qf08i0ln7sd7cq81bmm91kl25gc72l.apps.googleusercontent.com">
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/home.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/home.css" rel="stylesheet">
+    <title>Streamlabs Interview App</title>
+  </head>
+
+  <body>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <div id=content></div>
   </body>
 </html>
