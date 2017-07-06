@@ -7,7 +7,18 @@ function sendFile(req, res) {
   res.sendFile(`${__dirname}/${req.path}`)
 }
 
-function shutdown(server) {
+function shutdown(server, appData) {
+  fs.writeFileSync('chatLog.json', JSON.stringify(appData), 'utf8', (err) => {
+    console.log(appData)
+
+    if (err) {
+      console.err('An error occurred while attempting to save the app data...')
+    }
+    else {
+      console.log('Data saved successfully!')
+    }
+  })
+
   console.log('Received kill signal, shutting down...')
   server.close(() => {
     console.log('Closed out remaining connections.')
@@ -21,12 +32,19 @@ function shutdown(server) {
 }
 
 fs.readFile('chatLog.json', 'utf8', function (err, data) {
+  let fallbackAppData = { chatLog: [] }
+
   if (err) {
     console.log('Failed to initialize app. Shutting down...')
-    this.appData = { chatLog: [] }
+    this.appData = fallbackAppData
   }
   else {
-    this.appData = JSON.parse(data)
+    try {
+      this.appData = JSON.parse(data)
+    }
+    catch (e) {
+      this.appData = fallbackAppData
+    }
   }
   module.exports = init.call(this)
 })
@@ -35,6 +53,10 @@ function init() {
   const app = express()
   var appData = this.appData
   var chatLog = this.appData.chatLog || []
+
+  // handles case of appData being valid json
+  // but not having chatLog attribute
+  appData.chatLog = chatLog
 
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
@@ -70,8 +92,8 @@ function init() {
     console.log('Running on port 8080!')
   })
 
-  process.on('SIGTERM', shutdown.bind(null, server));
-  process.on('SIGINT', shutdown.bind(null, server));
+  process.on('SIGTERM', shutdown.bind(null, server, appData));
+  process.on('SIGINT', shutdown.bind(null, server, appData));
 
   _.forEach(app._router.stack, r => {
     if (r.route && r.route.path){
