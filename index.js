@@ -3,6 +3,7 @@ const fs = require('fs')
 const _ = require('lodash')
 const bodyParser = require('body-parser')
 const pug = require('pug')
+const expressWs = require('express-ws')
 
 const renderChatUi = pug.compileFile('templates/chatui.pug')
 const baseHtml = fs.readFileSync(__dirname + '/static/base.html', 'utf8', (err, html) => {
@@ -60,6 +61,8 @@ fs.readFile('chatLog.json', 'utf8', function (err, data) {
 
 function init() {
   const app = express()
+  expressWs(app)
+
   var currentUsers = {}
   var appData = this.appData
   var chatLog = this.appData.chatLog || []
@@ -94,6 +97,17 @@ function init() {
 
   app.post('/new-message', (req, res) => {
     chatLog[chatLog.length] = req.body
+
+    _.each(currentUsers, (currentUser, key) => {
+        if (currentUser.socket) {
+            currentUser.socket.send(renderChatUi({
+                me: _.assign(currentUser, {id: key}),
+                users: currentUsers,
+                messages: chatLog
+            }))
+        }
+    })
+
     res.send(chatLog)
   })
 
@@ -107,7 +121,7 @@ function init() {
       users: currentUsers,
       messages: chatLog
     })
-    res.send(`${rendered}${baseHtml}`)
+    res.send(`<div id="container" class="my-scrollable">${rendered}</div>${baseHtml}`)
   })
 
   app.delete('/clear', (req, res) => {
@@ -119,6 +133,18 @@ function init() {
   app.get('/', (req, res) => {
     res.sendFile('index.html',
         { root: __dirname } );
+  })
+
+  app.ws('/register/:id', (ws, req) => {
+      currentUsers[req.params.id].socket = ws
+  })
+
+  app.delete('/leave/:id', (req, res) => {
+    let leavingSocket = currentUsers[req.params.id].socket
+    if (leavingSocket) {
+        leavingSocket.close()
+    }
+    delete currentUsers[req.params.id]
   })
 
   let server = app.listen(8080, () => {

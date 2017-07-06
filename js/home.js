@@ -36,12 +36,28 @@ function onSignIn(googleUser) {
   $.post('/join', userData)
     .done((data) => {
         $('#content').html(data)
+
+        const updateSocket = new WebSocket('ws://localhost:8080/register/' + userData.id)
+        updateSocket.onmessage = (event) => {
+            $('#container').html(event.data)
+        }
+
+        sessionStorage.setItem(SOCKET, updateSocket)
       })
 }
 
 function signOut() {
+
+
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(() => {
+
+    let updateSocket = sessionStorage.getItem(SOCKET) || { close: () => {}}
+    updateSocket.close()
+    sessionStorage.removeItem(SOCKET)
+
+    $.delete('/leave/' + sessionStorage.getItem(USER).id)
+
     sessionStorage.removeItem(USER)
     console.log('User signed out.')
   })
