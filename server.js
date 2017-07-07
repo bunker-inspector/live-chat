@@ -112,7 +112,7 @@ app.post('/new-message', (req, res) => {
         currentUser.socket.send(JSON.stringify({
           chatLog: renderChatUi({
             me: _.assign(currentUser, {id: key}),
-            users: _.pick(currentUsers, ['socket']),
+            users: currentUsers,
             messages: chatLog
           })
         }))
@@ -124,13 +124,15 @@ app.post('/new-message', (req, res) => {
 })
 
 app.post('/join', (req, res) => {
+  console.log(req.body.id)
   currentUsers[req.body.id] = {
     name: req.body.name,
     image: req.body.image
   }
+
   var rendered = renderChatUi({
     me: req.body,
-    users: _.pick(currentUsers, ['socket']),
+    users: currentUsers,
     messages: chatLog
   })
   res.send(`

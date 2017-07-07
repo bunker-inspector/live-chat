@@ -53,13 +53,15 @@ function sendMessage(e) {
                 + (currentdate.getMonth()+1)  + "/"
                 + currentdate.getFullYear()
 
-  $.post('/new-message', {
+  var t = {
     timestamp: datetime,
     user: userData.name,
     uid: userData.id,
     image: userData.image,
     text: messageText
-  })
+  }
+
+  $.post('/new-message', t)
   .done(() => {
     input.val('')
 
