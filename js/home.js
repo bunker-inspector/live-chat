@@ -27,6 +27,11 @@ function displayUserMessages(id, name) {
 function sendMessage(e) {
   let input = $('#message-input')
   let messageText = input.val()
+
+  if (messageText.trim() === '') {
+    return
+  }
+
   let userData = JSON.parse(sessionStorage.getItem(USER))
 
   let currentdate = new Date();
@@ -43,7 +48,20 @@ function sendMessage(e) {
     image: userData.image,
     text: messageText
   })
-  .done(() => { input.val('') })
+  .done(() => {
+      input.val('')
+
+      let button = $('#message-send')
+      input.prop('disabled', true)
+      button.prop('disabled', true)
+
+      setTimeout(() => {
+        input.prop('disabled', false)
+        button.prop('disabled', false)
+        input.focus()
+      }, 500)
+
+  })
 }
 
 function onSignIn(googleUser) {
@@ -73,10 +91,24 @@ function onSignIn(googleUser) {
           }
         })
 
+        function setupWebSocket () {
+          this.ws = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
+          updateSocket.onmessage = (event) => {
+            container.html(event.data)
+            container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
+          }
+          this.ws.onclose = () => {
+            setTimeout(setupWebSocket, 1000);
+          }
+        }
+
         const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
         updateSocket.onmessage = (event) => {
           container.html(event.data)
           container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
+        }
+        updateSocket.onclose = () => {
+
         }
       })
 }

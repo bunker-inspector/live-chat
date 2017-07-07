@@ -98,7 +98,15 @@ function init() {
   })
 
   app.post('/new-message', (req, res) => {
-    chatLog[chatLog.length] = req.body
+    chatLog.push(req.body)
+
+    if (chatLog.length > 200) {
+        let toPrune = chatLog.length - 200
+
+        for (var i = 0; i < toPrune; i++) {
+            chatLog.shift()
+        }
+    }
 
     _.each(currentUsers, (currentUser, key) => {
         if (currentUser.socket) {
