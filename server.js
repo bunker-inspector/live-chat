@@ -57,14 +57,14 @@ function setNewVideo() {
 
         _.each(currentUsers, (currentUser, key) => {
           if (currentUser.socket) {
-            currentUser.socket.send({
+            currentUser.socket.send(JSON.stringify({
               videoUpdate: video,
               chatLog: renderChatUi({
                 me: _.assign(currentUser, {id: key}),
-                users: currentUsers,
+                users: _.pick(currentUsers, ['socket']),
                 messages: chatLog
               })
-            })
+            }))
           }
         })
       }
@@ -92,29 +92,35 @@ app.get('/posts/:user', (req, res) => {
 })
 
 app.post('/new-message', (req, res) => {
-  chatLog.push(req.body)
-
-  if (chatLog.length > 500) {
-    let toPrune = chatLog.length - 500
-
-    for (var i = 0; i < toPrune; i++) {
-        chatLog.shift()
-    }
+  if (req.body.text === '/next') {
+    res.send('OK')
+    setNewVideo()
   }
+  else {
+    chatLog.push(req.body)
 
-  _.each(currentUsers, (currentUser, key) => {
-    if (currentUser.socket) {
-      currentUser.socket.send(
-        renderChatUi({
-            me: _.assign(currentUser, {id: key}),
-            users: currentUsers,
-            messages: chatLog
-          }))
+    if (chatLog.length > 500) {
+      let toPrune = chatLog.length - 500
+
+      for (var i = 0; i < toPrune; i++) {
+          chatLog.shift()
+      }
     }
-  })
 
+    _.each(currentUsers, (currentUser, key) => {
+      if (currentUser.socket) {
+        currentUser.socket.send(JSON.stringify({
+          chatLog: renderChatUi({
+            me: _.assign(currentUser, {id: key}),
+            users: _.pick(currentUsers, ['socket']),
+            messages: chatLog
+          })
+        }))
+      }
+    })
 
-  res.send(chatLog)
+    res.send(chatLog)
+  }
 })
 
 app.post('/join', (req, res) => {
@@ -124,7 +130,7 @@ app.post('/join', (req, res) => {
   }
   var rendered = renderChatUi({
     me: req.body,
-    users: currentUsers,
+    users: _.pick(currentUsers, ['socket']),
     messages: chatLog
   })
   res.send(`

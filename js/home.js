@@ -9,9 +9,10 @@ function handleMessage(event) {
   let data = JSON.parse(event.data)
 
   if (data.videoUpdate) {
-    $('#video').html(`<iframe width="560" height="315" src="https://www.youtube.com/embed/${data.videoUpdate}?autoplay=1" frameborder="0" allowfullscreen></iframe>`)
+    $('#video').html(`<iframe width="500" height="315" src="https://www.youtube.com/embed/${data.videoUpdate}?autoplay=1" frameborder="0" allowfullscreen></iframe>`)
   }
   if (data.chatLog) {
+    let container = $('#container')
     container.html(data.chatLog)
     container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
   }
@@ -19,8 +20,6 @@ function handleMessage(event) {
 
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
-
-  console.log(id)
 
   $.get('/posts/' + id, (data) => {
     $('.modal-title').text(name + '\'s posts')
@@ -105,23 +104,12 @@ function onSignIn(googleUser) {
 
         function setupWebSocket () {
           this.ws = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
-          updateSocket.onmessage = (event) => {
-            container.html(event.data)
-            container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
-          }
+          this.ws.onmessage = handleMessage
           this.ws.onclose = () => {
             setTimeout(setupWebSocket, 1000);
           }
         }
-
-        const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
-        updateSocket.onmessage = (event) => {
-          container.html(event.data)
-          container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
-        }
-        updateSocket.onclose = () => {
-
-        }
+        setupWebSocket()
       })
 }
 
