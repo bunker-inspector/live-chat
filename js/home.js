@@ -8,15 +8,18 @@ $(document).ready(function () {
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
 
+  console.log(id)
+
   $.get('/posts/' + id, (data) => {
     $('.modal-title').text(name + '\'s posts')
 
+    console.log(id)
     $('.modal-body').html(data
       .map((elem) => {
         return '<div><em> On ' + elem.timestamp + ':</em><p>' + elem.text + '</p></div>'
       })
       .join(''))
-
+    console.log(data)
     messages.modal('show')
   })
 }
@@ -49,7 +52,7 @@ function onSignIn(googleUser) {
 
   let userData = {
     name: profile.getName(),
-    id: profile.getId(),
+    id: profile.getEmail(),
     image: profile.getImageUrl()
   }
 
@@ -84,8 +87,7 @@ function onSignIn(googleUser) {
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance()
   auth2.signOut().then(() => {
-    if (sessionStorage.getItem(USER))
-    {
+    if (sessionStorage.getItem(USER)) {
       $.ajax({
         type: 'DELETE',
         url: '/leave/' + JSON.parse(sessionStorage.getItem(USER)).id

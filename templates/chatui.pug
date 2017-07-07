@@ -1,7 +1,7 @@
 each message in messages
   .media
     - var myMessage = message.uid === me.id
-    - var callback = 'displayUserMessages(' + message.uid + ", '" + message.user + "')"
+    - var callback = 'displayUserMessages("' + message.uid + "\", '" + message.user + "')"
     a(
       class=myMessage ? 'pull-right' : 'pull-left'
       href='#'
