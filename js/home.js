@@ -73,7 +73,7 @@ function onSignIn(googleUser) {
           }
         })
 
-        const updateSocket = new WebSocket('wss://' + window.location.host + '/register/' + userData.id)
+        const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
         updateSocket.onmessage = (event) => {
 
           container.html(event.data)
