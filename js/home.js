@@ -75,12 +75,9 @@ function onSignIn(googleUser) {
 
         const updateSocket = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
         updateSocket.onmessage = (event) => {
-
           container.html(event.data)
           container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
         }
-
-        sessionStorage.setItem(SOCKET, updateSocket)
       })
 }
 
@@ -94,7 +91,6 @@ function signOut() {
       })
     }
 
-    sessionStorage.removeItem(SOCKET)
     sessionStorage.removeItem(USER)
     console.log('User signed out.')
   })
