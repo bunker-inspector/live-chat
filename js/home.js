@@ -5,6 +5,18 @@ $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
 });
 
+function handleMessage(event) {
+  let data = JSON.parse(event.data)
+
+  if (data.videoUpdate) {
+    $('#video').html(`<iframe width="560" height="315" src="https://www.youtube.com/embed/${data.videoUpdate}?autoplay=1" frameborder="0" allowfullscreen></iframe>`)
+  }
+  if (data.chatLog) {
+    container.html(data.chatLog)
+    container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
+  }
+}
+
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
 
@@ -41,6 +53,7 @@ function sendMessage(e) {
                 + currentdate.getDate() + "/"
                 + (currentdate.getMonth()+1)  + "/"
                 + currentdate.getFullYear()
+
   $.post('/new-message', {
     timestamp: datetime,
     user: userData.name,
@@ -49,18 +62,17 @@ function sendMessage(e) {
     text: messageText
   })
   .done(() => {
-      input.val('')
+    input.val('')
 
-      let button = $('#message-send')
-      input.prop('disabled', true)
-      button.prop('disabled', true)
+    let button = $('#message-send')
+    input.prop('disabled', true)
+    button.prop('disabled', true)
 
-      setTimeout(() => {
-        input.prop('disabled', false)
-        button.prop('disabled', false)
-        input.focus()
-      }, 500)
-
+    setTimeout(() => {
+      input.prop('disabled', false)
+      button.prop('disabled', false)
+      input.focus()
+    }, 500)
   })
 }
 

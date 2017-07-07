@@ -9,13 +9,17 @@ html {
     margin-bottom: 40px;
 }
 
+.media-heading > em {
+    margin-left: 15px;
+}
+
 #container {
     margin: 25px;
 }
 
 .my-scrollable {
     overflow: auto;
-    max-height: 75vh;
+    max-height: 40vh;
 }
 
 .btn-primary {

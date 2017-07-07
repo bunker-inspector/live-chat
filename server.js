@@ -4,8 +4,14 @@ const _ = require('lodash')
 const bodyParser = require('body-parser')
 const pug = require('pug')
 const expressWs = require('express-ws')
+const request = require('request')
 
 const port = process.env.PORT
+const apiKey = process.env.APIKEY
+
+const maxResults = 50
+const changeVideoMins = 5
+const commentFetchRate = 1
 
 const renderChatUi = pug.compileFile('templates/chatui.pug')
 const baseHtml = fs.readFileSync(__dirname + '/static/base.html', 'utf8', (err, html) => {
@@ -19,18 +25,7 @@ function sendFile(req, res) {
   res.sendFile(`${__dirname}/${req.path}`)
 }
 
-function shutdown(server, appData) {
-  fs.writeFileSync('chatLog.json', JSON.stringify(appData), 'utf8', (err) => {
-    console.log(appData)
-
-    if (err) {
-      console.err('An error occurred while attempting to save the app data...')
-    }
-    else {
-      console.log('Data saved successfully!')
-    }
-  })
-
+function shutdown(server) {
   console.log('Received kill signal, shutting down...')
   server.close(() => {
     console.log('Closed out remaining connections.')
@@ -43,130 +38,132 @@ function shutdown(server, appData) {
   }, 10000)
 }
 
-fs.readFile('chatLog.json', 'utf8', function (err, data) {
-  let fallbackAppData = { chatLog: [] }
+const app = express()
+expressWs(app)
 
-  if (err) {
-    console.log('Failed to initialize app. Shutting down...')
-    this.appData = fallbackAppData
-  }
-  else {
-    try {
-      this.appData = JSON.parse(data)
-    }
-    catch (e) {
-      this.appData = fallbackAppData
-    }
-  }
-  module.exports = init.call(this)
-})
+var currentUsers = {}
+var chatLog = []
+var video = ''
 
-function init() {
-  const app = express()
-  expressWs(app)
+function setNewVideo() {
+  let target = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}`
+  console.log(target)
+  request({ url: target },
+    (error, response, body) => {
+      if (!error && body) {
+        video = JSON.parse(body).items[Math.floor(Math.random()*maxResults)].id.videoId
+        console.log(video)
 
-  var currentUsers = {}
-  var appData = this.appData
-  var chatLog = this.appData.chatLog || []
+        chatLog.length = 0
 
-  // handles case of appData being valid json
-  // but not having chatLog attribute
-  appData.chatLog = chatLog
-
-  app.use(bodyParser.json())
-  app.use(bodyParser.urlencoded({ extended: true }))
-  app.use((req, res, next) => {
-    res.setHeader('Connection', 'close')
-    next()
-  })
-
-  app.get('/js/:file', sendFile);
-  app.get('/css/:file', sendFile);
-
-  app.get('/chat-log', (req, res) => {
-    res.send(chatLog)
-  })
-
-  app.get('/posts/:user', (req, res) => {
-    res.send(_.filter(chatLog, (message) => {
-      return message.uid === req.params.user
-    }))
-  })
-
-  app.get('/current-users', (req, res) => {
-    res.send(_.map(currentUsers, (user) => user.name))
-  })
-
-  app.post('/new-message', (req, res) => {
-    chatLog.push(req.body)
-
-    if (chatLog.length > 200) {
-        let toPrune = chatLog.length - 200
-
-        for (var i = 0; i < toPrune; i++) {
-            chatLog.shift()
-        }
-    }
-
-    _.each(currentUsers, (currentUser, key) => {
-        if (currentUser.socket) {
-            currentUser.socket.send(renderChatUi({
+        _.each(currentUsers, (currentUser, key) => {
+          if (currentUser.socket) {
+            currentUser.socket.send({
+              videoUpdate: video,
+              chatLog: renderChatUi({
                 me: _.assign(currentUser, {id: key}),
                 users: currentUsers,
                 messages: chatLog
-            }))
-        }
-    })
-
-    res.send(chatLog)
-  })
-
-  app.post('/join', (req, res) => {
-    currentUsers[req.body.id] = {
-      name: req.body.name,
-      image: req.body.image
-    }
-    var rendered = renderChatUi({
-      me: req.body,
-      users: currentUsers,
-      messages: chatLog
-    })
-    res.send(`<div id="container" class="my-scrollable">${rendered}</div>${baseHtml}`)
-  })
-
-  app.delete('/clear', (req, res) => {
-    //dun dun dunnnn
-    chatLog.length = 0
-    res.send(chatLog)
-  })
-
-  app.get('/', (req, res) => {
-    res.sendFile('index.html',
-        { root: __dirname } );
-  })
-
-  app.ws('/register/:id', (ws, req) => {
-      currentUsers[req.params.id].socket = ws
-  })
-
-  app.delete('/leave/:id', (req, res) => {
-    delete currentUsers[req.params.id]
-  })
-
-  let server = app.listen(port, () => {
-    console.log(`Running on port ${port}!`)
-  })
-
-  process.on('SIGTERM', shutdown.bind(null, server, appData));
-  process.on('SIGINT', shutdown.bind(null, server, appData));
-
-  _.forEach(app._router.stack, r => {
-    if (r.route && r.route.path){
-      for (var key in r.route.methods) {
-        if (r.route.methods[key]) console.log(`${key}\t${r.route.path}`)
+              })
+            })
+          }
+        })
       }
+    })
+}
+
+setNewVideo()
+
+setInterval(setNewVideo, changeVideoMins*600000)
+
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use((req, res, next) => {
+  res.setHeader('Connection', 'close')
+  next()
+})
+
+app.get('/js/:file', sendFile);
+app.get('/css/:file', sendFile);
+
+app.get('/posts/:user', (req, res) => {
+  res.send(_.filter(chatLog, (message) => {
+    return message.uid === req.params.user
+  }))
+})
+
+app.post('/new-message', (req, res) => {
+  chatLog.push(req.body)
+
+  if (chatLog.length > 500) {
+    let toPrune = chatLog.length - 500
+
+    for (var i = 0; i < toPrune; i++) {
+        chatLog.shift()
+    }
+  }
+
+  _.each(currentUsers, (currentUser, key) => {
+    if (currentUser.socket) {
+      currentUser.socket.send(
+        renderChatUi({
+            me: _.assign(currentUser, {id: key}),
+            users: currentUsers,
+            messages: chatLog
+          }))
     }
   })
 
-  return app
-}
+
+  res.send(chatLog)
+})
+
+app.post('/join', (req, res) => {
+  currentUsers[req.body.id] = {
+    name: req.body.name,
+    image: req.body.image
+  }
+  var rendered = renderChatUi({
+    me: req.body,
+    users: currentUsers,
+    messages: chatLog
+  })
+  res.send(`
+    <div id="video">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/${video}?autoplay=1" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div id="container" class="my-scrollable">
+      ${rendered}
+    </div>
+    ${baseHtml}`)
+})
+
+app.get('/', (req, res) => {
+  res.sendFile('index.html',
+      { root: __dirname } );
+})
+
+app.ws('/register/:id', (ws, req) => {
+    currentUsers[req.params.id].socket = ws
+})
+
+app.delete('/leave/:id', (req, res) => {
+  delete currentUsers[req.params.id]
+})
+
+let server = app.listen(port, () => {
+  console.log(`Running on port ${port}!`)
+})
+
+process.on('SIGTERM', shutdown.bind(null, server));
+process.on('SIGINT', shutdown.bind(null, server));
+
+_.forEach(app._router.stack, r => {
+  if (r.route && r.route.path){
+    for (var key in r.route.methods) {
+      if (r.route.methods[key]) console.log(`${key}\t${r.route.path}`)
+    }
+  }
+})
+
+module.exports = app

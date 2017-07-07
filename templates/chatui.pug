@@ -16,7 +16,8 @@ each message in messages
       )
     .media-body
       h4.media-heading= message.user
+        em
+          small Posted 
+          small= message.timestamp
       p= message.text
-      em
-        small= message.timestamp
     hr
