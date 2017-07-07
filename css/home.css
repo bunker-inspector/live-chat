@@ -5,6 +5,16 @@ html {
     margin-right: auto;
 }
 
+#video {
+    text-align: center;
+    margin-top: 15px;
+}
+
+iframe {
+    display: block;
+    margin: auto;
+}
+
 .input-group {
     margin-bottom: 40px;
 }

@@ -47,12 +47,11 @@ var video = ''
 
 function setNewVideo() {
   let target = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}`
-  console.log(target)
   request({ url: target },
     (error, response, body) => {
       if (!error && body) {
         video = JSON.parse(body).items[Math.floor(Math.random()*maxResults)].id.videoId
-        console.log(video)
+        console.log(`Switching to video: ${video}`)
 
         chatLog.length = 0
 
@@ -130,7 +129,7 @@ app.post('/join', (req, res) => {
   })
   res.send(`
     <div id="video">
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/${video}?autoplay=1" frameborder="0" allowfullscreen></iframe>
+      <iframe width="560" height="315" display="block" src="https://www.youtube.com/embed/${video}?autoplay=1" frameborder="0" allowfullscreen></iframe>
     </div>
     <div id="container" class="my-scrollable">
       ${rendered}
