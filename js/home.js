@@ -41,7 +41,6 @@ function showUserMessages(e) {
 }
 
 function setClickHandler() {
-   console.log(innerDoc.body);
     $('#chat').on('click', 'span[id="author-name"]', showUserMessages)
 }
 
