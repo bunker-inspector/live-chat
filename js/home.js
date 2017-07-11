@@ -22,7 +22,7 @@ function displayUserMessages(id, name) {
 }
 
 function updateVideo(data) {
-  $('#video-view').attr('src', `http://www.youtube.com/embed/${data}`)
+  $('#video-view').attr('src', `http://www.youtube.com/embed/${data}?autoplay=1`)
   $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}?embed_domain=${document.domain}`)
 }
 
