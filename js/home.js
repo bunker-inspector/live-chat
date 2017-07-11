@@ -41,6 +41,7 @@ function showUserMessages(e) {
 }
 
 function setClickHandler() {
+  alert("HERE!")
   $('#contents').on('click', 'span[id="author-name"]', showUserMessages)
 }
 
