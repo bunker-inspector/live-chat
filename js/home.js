@@ -1,22 +1,8 @@
 const USER = 'user'
-const SOCKET = 'socket'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
 });
-
-function handleMessage(event) {
-  let data = JSON.parse(event.data)
-
-  if (data.videoUpdate) {
-    $('#video').html(`<iframe width="500" height="315" src="https://www.youtube.com/embed/${data.videoUpdate}?autoplay=1" frameborder="0" allowfullscreen></iframe>`)
-  }
-  if (data.chatLog) {
-    let container = $('#container')
-    container.html(data.chatLog)
-    container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
-  }
-}
 
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
@@ -35,97 +21,22 @@ function displayUserMessages(id, name) {
   })
 }
 
-function sendMessage(e) {
-  let input = $('#message-input')
-  let messageText = input.val()
-
-  if (messageText.trim() === '') {
-    return
-  }
-
-  let userData = JSON.parse(sessionStorage.getItem(USER))
-
-  let currentdate = new Date();
-  let datetime =  currentdate.getHours() + ':'
-                + currentdate.getMinutes() + ':'
-                + currentdate.getSeconds() + ' '
-                + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/"
-                + currentdate.getFullYear()
-
-  var t = {
-    timestamp: datetime,
-    user: userData.name,
-    uid: userData.id,
-    image: userData.image,
-    text: messageText
-  }
-
-  $.post('/new-message', t)
-  .done(() => {
-    input.val('')
-
-    let button = $('#message-send')
-    input.prop('disabled', true)
-    button.prop('disabled', true)
-
-    setTimeout(() => {
-      input.prop('disabled', false)
-      button.prop('disabled', false)
-      input.focus()
-    }, 500)
-  })
+function updateVideo(data) {
+  $('#video-view').attr('src', `http://www.youtube.com/embed/${data}`)
+  $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}?embed_domain=${document.domain}`)
 }
 
 function onSignIn(googleUser) {
   // Useful data for your client-side scripts:
-  var profile = googleUser.getBasicProfile();
+  sessionStorage.setItem(USER, googleUser.getBasicProfile())
 
-  let userData = {
-    name: profile.getName(),
-    id: profile.getEmail(),
-    image: profile.getImageUrl()
-  }
-
-  sessionStorage.setItem(USER, JSON.stringify(userData))
-
-  $.post('/join', userData)
-    .done((data) => {
-        $('#content').html(data)
-
-        let container = $('#container')
-        container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
-
-        $('#message-send').click(sendMessage)
-        $('#message-input').on('keydown', (e) => {
-          // send on enter key
-          if (e.keyCode === 13) {
-            sendMessage(e)
-          }
-        })
-
-        function setupWebSocket () {
-          this.ws = new WebSocket('ws://' + window.location.host + '/register/' + userData.id)
-          this.ws.onmessage = handleMessage
-          this.ws.onclose = () => {
-            setTimeout(setupWebSocket, 1000);
-          }
-        }
-        setupWebSocket()
-      })
+  $.get('/setvideo', updateVideo)
 }
 
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance()
-  auth2.signOut().then(() => {
-    if (sessionStorage.getItem(USER)) {
-      $.ajax({
-        type: 'DELETE',
-        url: '/leave/' + JSON.parse(sessionStorage.getItem(USER)).id
-      })
-    }
+  auth2.signOut()
 
-    sessionStorage.removeItem(USER)
-    console.log('User signed out.')
-  })
+  sessionStorage.removeItem(USER)
+  console.log('User signed out.')
 }

@@ -13,9 +13,8 @@
     "express": "^4.15.3",
     "lodash": "^4.17.4",
     "body-parser": "^1.17.2",
-    "pug": "^2.0.0-rc.2",
-    "express-ws": "^3.0.0",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "promise": "^8.0.0"
   },
   "devDependencies": {
     "mocha": "^3.4.2",
