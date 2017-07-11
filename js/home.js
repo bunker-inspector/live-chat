@@ -40,11 +40,14 @@ function showUserMessages(e) {
     console.log(data)
 }
 
+function setClickHandler() {
+  $('#contents').on('click', 'span[id="author-name"]', showUserMessages)
+}
+
 function updateVideo() {
   $.get('/setvideo', data => {
     $('#video-view').attr('src', `https://www.youtube.com/embed/${data}?autoplay=1`)
     $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}&embed_domain=${document.domain}`)
-    $('#contents').on('click', 'span[id="author-name"]', showUserMessages)
   })
 }
 
