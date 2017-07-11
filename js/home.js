@@ -23,7 +23,7 @@ function displayUserMessages(id, name) {
 
 function updateVideo(data) {
   $('#video-view').attr('src', `http://www.youtube.com/embed/${data}`)
-  $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}?embed_domain=${document.domain}`)
+  $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}?embed_domain=www.rstream-chat.herokuapp.com`)
 }
 
 function onSignIn(googleUser) {
