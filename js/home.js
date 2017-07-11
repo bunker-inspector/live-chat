@@ -21,16 +21,17 @@ function displayUserMessages(id, name) {
   })
 }
 
-function updateVideo(data) {
-  $('#video-view').attr('src', `https://www.youtube.com/embed/${data}?autoplay=1`)
-  $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}&embed_domain=${document.domain}`)
-}
+function updateVideo() {
+  $.get('/setvideo', data => {
+    $('#video-view').attr('src', `https://www.youtube.com/embed/${data}?autoplay=1`)
+    $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}&embed_domain=${document.domain}`)
+  })
 
 function onSignIn(googleUser) {
   // Useful data for your client-side scripts:
   sessionStorage.setItem(USER, googleUser.getBasicProfile())
 
-  $.get('/setvideo', updateVideo)
+  updateVideo()
 
   $('#random-button').click(updateVideo)
 }
