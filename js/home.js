@@ -25,7 +25,7 @@ function showUserMessages(e) {
     let userName = $(e.target).text()
 
     let data = _.map(
-    _.filter($('div[id="content"]'), (element) => {
+    _.filter($('yt-live-chat-text-message-renderer div[id="content"]'), (element) => {
       return $(element).find('span[id="author-name"]').text() === userName
     }),
     (element) => {
@@ -41,8 +41,7 @@ function showUserMessages(e) {
 }
 
 function setClickHandler() {
-  alert("HERE!")
-  $('#contents').on('click', 'span[id="author-name"]', showUserMessages)
+  $('#chat').on('click', 'span[id="author-name"]', showUserMessages)
 }
 
 function updateVideo() {
