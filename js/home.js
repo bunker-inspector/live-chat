@@ -31,6 +31,8 @@ function onSignIn(googleUser) {
   sessionStorage.setItem(USER, googleUser.getBasicProfile())
 
   $.get('/setvideo', updateVideo)
+
+  $('#random-button').click(updateVideo)
 }
 
 function signOut() {
