@@ -1,30 +1,8 @@
 const USER = 'user'
-var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
 });
-
-var player;
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player('chat-view', {
-    events: {
-      'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
-    }
-  })
-}
-
-function onPlayerReady() {
-  console.log("hey Im ready")
-}
-
-function onPlayerStateChange() {
-  console.log("my state changed")
-}
 
 function displayUserMessages(id, name) {
   let messages = $('#user-messages')
@@ -63,8 +41,6 @@ function showUserMessages(e) {
 }
 
 function setClickHandler() {
-  var iframe = document.getElementById("chat-view");
-   var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
    console.log(innerDoc.body);
     $('#chat').on('click', 'span[id="author-name"]', showUserMessages)
 }
