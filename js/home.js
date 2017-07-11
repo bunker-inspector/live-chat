@@ -15,14 +15,15 @@ function onYouTubeIframeAPIReady() {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
-  });
+  })
 }
 
 function onPlayerReady() {
-    console.log("hey Im ready");
+  console.log("hey Im ready")
+}
 
 function onPlayerStateChange() {
-  console.log("my state changed");
+  console.log("my state changed")
 }
 
 function displayUserMessages(id, name) {
