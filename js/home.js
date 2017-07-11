@@ -26,13 +26,14 @@ function showUserMessages(e) {
 
     let data = _.map(
     _.filter($('div[id="content"]'), (element) => {
-      $(element).find('span[id="author-name"]').text() === userName
+      return $(element).find('span[id="author-name"]').text() === userName
     }),
     (element) => {
         let _element = $(element)
-        {
-          message = _element.find('span[id="message"]').text(),
-          timestamp = _element.find('span[id="timestamp"]').text()
+
+        return {
+          message: _element.find('span[id="message"]').text(),
+          timestamp: _element.find('span[id="timestamp"]').text()
         }
     })
 
