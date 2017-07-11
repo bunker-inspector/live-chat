@@ -41,7 +41,10 @@ function showUserMessages(e) {
 }
 
 function setClickHandler() {
-  $('#chat').on('click', 'span[id="author-name"]', showUserMessages)
+  var iframe = document.getElementById("chat-view");
+   var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+   console.log(innerDoc.body);
+    $('#chat').on('click', 'span[id="author-name"]', showUserMessages)
 }
 
 function updateVideo() {
