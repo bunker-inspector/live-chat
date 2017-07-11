@@ -21,10 +21,29 @@ function displayUserMessages(id, name) {
   })
 }
 
+function showUserMessages(e) {
+    let userName = $(e.target).text()
+
+    let data = _.map(
+    _.filter($('div[id="content"]'), (element) => {
+      $(element).find('span[id="author-name"]').text() === userName
+    }),
+    (element) => {
+        let _element = $(element)
+        {
+          message = _element.find('span[id="message"]').text(),
+          timestamp = _element.find('span[id="timestamp"]').text()
+        }
+    })
+
+    console.log(data)
+}
+
 function updateVideo() {
   $.get('/setvideo', data => {
     $('#video-view').attr('src', `https://www.youtube.com/embed/${data}?autoplay=1`)
     $('#chat-view').attr('src', `https://www.youtube.com/live_chat?v=${data}&embed_domain=${document.domain}`)
+    $('#contents').on('click', 'span[id="author-name"]', showUserMessages)
   })
 }
 
@@ -33,10 +52,9 @@ function onSignIn(googleUser) {
   sessionStorage.setItem(USER, googleUser.getBasicProfile())
 
   updateVideo()
-
   $('#random-button').click(updateVideo)
 
-  $('#content').show()
+  $('#main').show()
   $('#random-button').show()
 }
 
