@@ -35,6 +35,9 @@ function onSignIn(googleUser) {
   updateVideo()
 
   $('#random-button').click(updateVideo)
+
+  $('#content').show()
+  $('#random-button').show()
 }
 
 function signOut() {
