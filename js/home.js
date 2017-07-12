@@ -1,5 +1,6 @@
 const USER = 'user'
 const SOCKET = 'socket'
+const CHAT_ID = 'chatId'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
@@ -15,6 +16,9 @@ function handleMessage(event) {
     let container = $('#container')
     container.html(data.chatLog)
     container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
+  }
+  if (data.chatId) {
+    sessionStorage.setItem(CHAT_ID, data.chatId)
   }
 }
 
@@ -43,25 +47,15 @@ function sendMessage(e) {
     return
   }
 
-  let userData = JSON.parse(sessionStorage.getItem(USER))
-
-  let currentdate = new Date();
-  let datetime =  currentdate.getHours() + ':'
-                + currentdate.getMinutes() + ':'
-                + currentdate.getSeconds() + ' '
-                + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/"
-                + currentdate.getFullYear()
-
-  var t = {
-    timestamp: datetime,
-    user: userData.name,
-    uid: userData.id,
-    image: userData.image,
-    text: messageText
-  }
-
-  $.post('/new-message', t)
+  $.post('https://www.googleapis.com/youtube/v3/liveChat/messages', {
+    snippet: {
+      type: 'textMessageEvent',
+      liveChatId: sessionStorage.getItem(CHAT_ID),
+      textMessageDetails: {
+        messageText: messageText
+      }
+    }
+  })
   .done(() => {
     input.val('')
 
@@ -125,6 +119,7 @@ function signOut() {
       })
     }
 
+    sessionStorage.removeItem(CHAT_ID)
     sessionStorage.removeItem(USER)
     console.log('User signed out.')
   })

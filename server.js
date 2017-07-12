@@ -1,3 +1,5 @@
+"use strict";
+
 const express = require('express')
 const fs = require('fs')
 const _ = require('lodash')
@@ -12,6 +14,7 @@ const apiKey = process.env.APIKEY
 const maxResults = 50
 const changeVideoMins = 5
 const commentFetchRate = 1
+const updateChatMillisecs = 1000
 
 const apiBase = "https://www.googleapis.com/youtube/v3"
 
@@ -48,27 +51,47 @@ var chatLog = []
 var chatId = ''
 var video = ''
 
-function updateUsers() {
-  let rendered = renderChatUi({
-    users: _.pick(currentUsers, ['socket']),
-    messages: chatLog
-  })
-
+function sendToUsers(message) {
   _.each(currentUsers, (currentUser, key) => {
     if (currentUser.socket) {
-      currentUser.socket.send(JSON.stringify({
-        videoUpdate: video,
-        chatLog: rendered
-      }))
+      currentUser.socket.send(JSON.stringify(message))
     }
   })
 }
 
-function setNewVideo() {
-  let target = `${apiBase}/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}`
-  request({ url: target },
+function sendChatsToUsers() {
+  let rendered = renderChatUi({
+    messages: chatLog
+  })
+
+  sendToUsers({
+    chatId: chatId,
+    chatLog: rendered
+  })
+}
+
+function updateVideo() {
+  sendToUsers({ videoUpdate: video })
+}
+
+function updateChats() {
+  request({ url: `${apiBase}/liveChat/messages?liveChatId=${chatId}&maxResults=1000&part=snippet,authorDetails&key=${apiKey}`},
     (error, response, body) => {
-      if (!error && body) {
+      if (!error && response.statusCode === 200) {
+        let currChats = JSON.parse(body).items
+        if (!_.isEqual(currChats, chatLog)) {
+          chatLog = currChats
+
+          sendChatsToUsers()
+        }
+      }
+    })
+}
+
+function setNewVideo() {
+  request({ url: `${apiBase}/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}` },
+    (error, response, body) => {
+      if (!error && response.statusCode === 200) {
         video = JSON.parse(body).items[Math.floor(Math.random()*maxResults)].id.videoId
         console.log(`Switching to video: ${video}`)
 
@@ -79,24 +102,13 @@ function setNewVideo() {
                     chatId = JSON.parse(body).items[0].liveStreamingDetails.activeLiveChatId
                     console.log(`Got chat ID: ${chatId}`)
 
-                    request({ url: `${apiBase}/liveChat/messages?liveChatId=${chatId}&maxResults=1000&part=snippet,authorDetails&key=${apiKey}`},
-                    (error, response, body) => {
-                      let currChats = JSON.parse(body).items
-                      if (!_.isEqual(currChats, chatLog)) {
-                        chatLog = currChats
-                        console.log(`Got messages! Sample: ${JSON.stringify(chatLog[0])}`)
-                        updateUsers()
-                      }
-                    })
+                    updateVideo()
+                    updateChats()
                 }
             })
       }
     })
 }
-
-setNewVideo()
-
-setInterval(setNewVideo, changeVideoMins*600000)
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -117,7 +129,7 @@ app.get('/posts/:user', (req, res) => {
 app.post('/new-message', (req, res) => {
   if (req.body.text === '/next') {
     res.send('OK')
-    setNewVideo()
+    setNewVideo(() => {})
   }
   else {
     chatLog.push(req.body)
@@ -183,6 +195,9 @@ app.delete('/leave/:id', (req, res) => {
 
 let server = app.listen(port, () => {
   console.log(`Running on port ${port}!`)
+  setNewVideo()
+  setInterval(updateChats, updateChatMillisecs)
+  setInterval(setNewVideo, changeVideoMins*600000)
 })
 
 process.on('SIGTERM', shutdown.bind(null, server));
