@@ -97,8 +97,10 @@ function onSignIn(googleUser) {
   window.accessToken = `${authResponse.token_type} ${authResponse.access_token}`
   $.post('/join', userData)
     .done((data) => {
-        $('#content').html(data)
+        $('#content').html(data.view)
 
+        console.log(data.chatId)
+        window.chatId = data.chatId
         let container = $('#container')
         container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
 

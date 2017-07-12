@@ -139,14 +139,16 @@ app.post('/join', (req, res) => {
   var rendered = renderChatUi({
     messages: chatLog
   })
-  res.send(`
-    <div id="video">
+  res.send({
+      chatId: chatId,
+      view: `<div id="video">
       <iframe width="560" height="315" display="block" src="https://www.youtube.com/embed/${video}?autoplay=1" frameborder="0" allowfullscreen></iframe>
     </div>
     <div id="container" class="my-scrollable">
       ${rendered}
     </div>
-    ${baseHtml}`)
+    ${baseHtml}`
+  })
 })
 
 app.get('/', (req, res) => {
