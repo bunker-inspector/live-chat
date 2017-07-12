@@ -74,6 +74,7 @@ function sendMessage(e) {
 function onSignIn(googleUser) {
   // Useful data for your client-side scripts:
   var profile = googleUser.getBasicProfile();
+  console.log(googleUser.getAuthResponse(true))
 
   let userData = {
     name: profile.getName(),
