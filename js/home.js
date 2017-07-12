@@ -1,7 +1,6 @@
 const USER = 'user'
 const SOCKET = 'socket'
 const CHAT_ID = 'chatId'
-const TOKEN = 'token'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
@@ -20,6 +19,7 @@ function handleMessage(event) {
   }
   if (data.chatId) {
     sessionStorage.setItem(CHAT_ID, data.chatId)
+    sessionStorage.getItem(CHAT_ID)
   }
 }
 
@@ -48,13 +48,13 @@ function sendMessage(e) {
     return
   }
 
-  console.log(sessionStorage.getItem(TOKEN))
+  console.log(window.accessToken)
   console.log(sessionStorage.getItem(CHAT_ID))
   $.ajax({
       type: 'POST',
       url: 'https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet',
       headers: {
-        'Authorization': sessionStorage.getItem(TOKEN),
+        'Authorization': window.accessToken,
         'Content-Type': 'application/json'
       },
       data: JSON.stringify({
@@ -80,6 +80,8 @@ function sendMessage(e) {
       input.focus()
     }, 500)
   })
+
+  $.post('/new-message', (response) => {})
 }
 
 function onSignIn(googleUser) {
@@ -94,7 +96,7 @@ function onSignIn(googleUser) {
   }
 
   sessionStorage.setItem(USER, JSON.stringify(userData))
-  sessionStorage.setItem(TOKEN, `${authResponse.token_type} ${authResponse.access_token}`)
+  window.accessToken = `${authResponse.token_type} ${authResponse.access_token}`
   $.post('/join', userData)
     .done((data) => {
         $('#content').html(data)
