@@ -81,7 +81,6 @@ function updateChats() {
         let currChats = JSON.parse(body).items
         if (!_.isEqual(currChats, chatLog)) {
           chatLog = currChats
-
           sendChatsToUsers()
         }
       }
@@ -120,9 +119,9 @@ app.use((req, res, next) => {
 app.get('/js/:file', sendFile);
 app.get('/css/:file', sendFile);
 
-app.get('/posts/:user', (req, res) => {
+app.get('/posts/:channel', (req, res) => {
   res.send(_.filter(chatLog, (message) => {
-    return message.uid === req.params.user
+    return message.authorDetails.channelId === req.params.channel
   }))
 })
 

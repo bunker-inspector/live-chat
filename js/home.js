@@ -32,7 +32,7 @@ function displayUserMessages(id, name) {
     console.log(id)
     $('.modal-body').html(data
       .map((elem) => {
-        return '<div><em> On ' + elem.timestamp + ':</em><p>' + elem.text + '</p></div>'
+        return '<div><em> On ' + elem.snippet.publishedAt + ':</em><p>' + elem.snippet.displayMessage + '</p></div>'
       })
       .join(''))
     console.log(data)

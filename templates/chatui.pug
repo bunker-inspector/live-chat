@@ -1,6 +1,6 @@
 each message in messages
   .media
-    - var callback = 'displayUserMessages("' + message.uid + "\", '" + message.user + "')"
+    - var callback = 'displayUserMessages("' + message.authorDetails.channelId + "\", '" + message.authorDetails.displayName + "')"
     a(
       class='pull-right'
       href='#'
