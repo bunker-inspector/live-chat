@@ -13,6 +13,8 @@ const maxResults = 50
 const changeVideoMins = 5
 const commentFetchRate = 1
 
+const apiBase = "https://www.googleapis.com/youtube/v3"
+
 const renderChatUi = pug.compileFile('templates/chatui.pug')
 const baseHtml = fs.readFileSync(__dirname + '/static/base.html', 'utf8', (err, html) => {
   if (err) {
@@ -43,30 +45,51 @@ expressWs(app)
 
 var currentUsers = {}
 var chatLog = []
+var chatId = ''
 var video = ''
 
+function updateUsers() {
+  let rendered = renderChatUi({
+    users: _.pick(currentUsers, ['socket']),
+    messages: chatLog
+  })
+
+  _.each(currentUsers, (currentUser, key) => {
+    if (currentUser.socket) {
+      currentUser.socket.send(JSON.stringify({
+        videoUpdate: video,
+        chatLog: rendered
+      }))
+    }
+  })
+}
+
 function setNewVideo() {
-  let target = `https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}`
+  let target = `${apiBase}/search?part=snippet&eventType=live&type=video&videoCategoryId=20&regionCode=US&maxResults=${maxResults}&key=${apiKey}`
   request({ url: target },
     (error, response, body) => {
       if (!error && body) {
         video = JSON.parse(body).items[Math.floor(Math.random()*maxResults)].id.videoId
         console.log(`Switching to video: ${video}`)
 
-        chatLog.length = 0
+        let chatApiTarget = `${apiBase}/videos?id=${video}&part=liveStreamingDetails&key=${apiKey}`
+        request({ url: chatApiTarget },
+            (error, response, body) => {
+                if (!error && body) {
+                    chatId = JSON.parse(body).items[0].liveStreamingDetails.activeLiveChatId
+                    console.log(`Got chat ID: ${chatId}`)
 
-        _.each(currentUsers, (currentUser, key) => {
-          if (currentUser.socket) {
-            currentUser.socket.send(JSON.stringify({
-              videoUpdate: video,
-              chatLog: renderChatUi({
-                me: _.assign(currentUser, {id: key}),
-                users: _.pick(currentUsers, ['socket']),
-                messages: chatLog
-              })
-            }))
-          }
-        })
+                    request({ url: `${apiBase}/liveChat/messages?liveChatId=${chatId}&maxResults=1000&part=snippet,authorDetails&key=${apiKey}`},
+                    (error, response, body) => {
+                      let currChats = JSON.parse(body).items
+                      if (!_.isEqual(currChats, chatLog)) {
+                        chatLog = currChats
+                        console.log(`Got messages! Sample: ${JSON.stringify(chatLog[0])}`)
+                        updateUsers()
+                      }
+                    })
+                }
+            })
       }
     })
 }

@@ -1,23 +1,18 @@
 each message in messages
   .media
-    - var myMessage = message.uid === me.id
     - var callback = 'displayUserMessages("' + message.uid + "\", '" + message.user + "')"
     a(
-      class=myMessage ? 'pull-right' : 'pull-left'
+      class='pull-right'
       href='#'
       onclick=callback
     )
-      -var user = users[message.uid] || {image: 'https://www.askideas.com/media/16/Cute-Pug-Puppy-Picture.jpg'}
       img(
         class='media-object'
-        src=user.image
+        src=message.authorDetails.profileImageUrl
         width=64
         hight=64
       )
     .media-body
-      h4.media-heading= message.user
-        em
-          small Posted
-          small= ' ' + message.timestamp
-      p= message.text
+      h4.media-heading= message.authorDetails.displayName
+      p= message.snippet.displayMessage
     hr
