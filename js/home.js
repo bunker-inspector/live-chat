@@ -20,7 +20,6 @@ function handleMessage(event) {
   }
   if (data.chatId) {
     sessionStorage.setItem(CHAT_ID, data.chatId)
-    console.log(sessionStorage.getItem(CHAT_ID))
   }
 }
 
