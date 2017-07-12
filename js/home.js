@@ -1,6 +1,7 @@
 const USER = 'user'
 const SOCKET = 'socket'
 const CHAT_ID = 'chatId'
+const TOKEN = 'token'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
@@ -19,6 +20,7 @@ function handleMessage(event) {
   }
   if (data.chatId) {
     sessionStorage.setItem(CHAT_ID, data.chatId)
+    console.log(sessionStorage.getItem(CHAT_ID))
   }
 }
 
@@ -47,14 +49,24 @@ function sendMessage(e) {
     return
   }
 
-  $.post('https://www.googleapis.com/youtube/v3/liveChat/messages', {
-    snippet: {
-      type: 'textMessageEvent',
-      liveChatId: sessionStorage.getItem(CHAT_ID),
-      textMessageDetails: {
-        messageText: messageText
-      }
-    }
+  console.log(sessionStorage.getItem(TOKEN))
+  console.log(sessionStorage.getItem(CHAT_ID))
+  $.ajax({
+      type: 'POST',
+      url: 'https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet',
+      headers: {
+        'Authorization': sessionStorage.getItem(TOKEN),
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify({
+        snippet: {
+          type: 'textMessageEvent',
+          liveChatId: sessionStorage.getItem(CHAT_ID),
+          textMessageDetails: {
+            messageText: messageText
+          }
+        }
+      })
   })
   .done(() => {
     input.val('')
@@ -74,7 +86,7 @@ function sendMessage(e) {
 function onSignIn(googleUser) {
   // Useful data for your client-side scripts:
   var profile = googleUser.getBasicProfile();
-  console.log(googleUser.getAuthResponse(true))
+  var authResponse = googleUser.getAuthResponse(true)
 
   let userData = {
     name: profile.getName(),
@@ -83,7 +95,7 @@ function onSignIn(googleUser) {
   }
 
   sessionStorage.setItem(USER, JSON.stringify(userData))
-
+  sessionStorage.setItem(TOKEN, `${authResponse.token_type} ${authResponse.access_token}`)
   $.post('/join', userData)
     .done((data) => {
         $('#content').html(data)
