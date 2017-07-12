@@ -1,6 +1,5 @@
 const USER = 'user'
 const SOCKET = 'socket'
-const CHAT_ID = 'chatId'
 
 $(document).ready(function () {
   window.addEventListener("beforeunload", signOut)
@@ -18,8 +17,7 @@ function handleMessage(event) {
     container.animate({ scrollTop: container.prop("scrollHeight")}, 1000)
   }
   if (data.chatId) {
-    sessionStorage.setItem(CHAT_ID, data.chatId)
-    sessionStorage.getItem(CHAT_ID)
+    window.chatId = data.chatId
   }
 }
 
@@ -49,7 +47,7 @@ function sendMessage(e) {
   }
 
   console.log(window.accessToken)
-  console.log(sessionStorage.getItem(CHAT_ID))
+  console.log(window.chatId)
   $.ajax({
       type: 'POST',
       url: 'https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet',
@@ -60,7 +58,7 @@ function sendMessage(e) {
       data: JSON.stringify({
         snippet: {
           type: 'textMessageEvent',
-          liveChatId: sessionStorage.getItem(CHAT_ID),
+          liveChatId: window.chatId,
           textMessageDetails: {
             messageText: messageText
           }
@@ -133,7 +131,6 @@ function signOut() {
       })
     }
 
-    sessionStorage.removeItem(CHAT_ID)
     sessionStorage.removeItem(USER)
     console.log('User signed out.')
   })
