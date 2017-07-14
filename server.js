@@ -97,7 +97,7 @@ function setNewVideo() {
         let chatApiTarget = `${apiBase}/videos?id=${video}&part=liveStreamingDetails&key=${apiKey}`
         request({ url: chatApiTarget },
             (error, response, body) => {
-                if (!error && body) {
+                if (!error && response.statusCode === 200) {
                     chatId = JSON.parse(body).items[0].liveStreamingDetails.activeLiveChatId
                     console.log(`Got chat ID: ${chatId}`)
 
